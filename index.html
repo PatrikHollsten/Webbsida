@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Patrik &amp; Alice</title>
-  <meta name="description" content="Patrik &amp; Alice gifter sig 17 juli 2027 på Undersviks Gårdshotell.">
+  <meta name="description" content="Patrik &amp; Alice gifter sig 17 juli 2027.">
   <meta property="og:title" content="Patrik &amp; Alice – 2027.07.17">
-  <meta property="og:description" content="Save the date. Mer information kommer med inbjudan.">
-  <meta name="theme-color" content="#9A2108">
+  <meta property="og:description" content="Save the date: 17 juli 2027.">
+  <meta name="theme-color" content="#FB8886">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
       --coral: #FB8886;
       --red: #9A2108;
       --cream: #FFF1EC;
-      --nav-h: 52px;
+      --nav-h: 0px;
       --display: "Abril Fatface", "Bodoni MT", "Didot", Georgia, serif;
       --sans: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
     }
@@ -51,7 +51,10 @@
       padding: 0 5vw;
       max-width: 1100px;
       list-style: none;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
+    .nav ul::-webkit-scrollbar { display: none; }
     .nav a {
       display: block;
       padding: 8px 2px;
@@ -222,23 +225,10 @@
 </head>
 <body>
 
-  <nav class="nav" aria-label="Huvudmeny">
-    <ul>
-      <li><a href="#osa">OSA</a></li>
-      <li><a href="#program">Program</a></li>
-      <li><a href="#hitta-hit">Hitta hit</a></li>
-      <li><a href="#mer">Mer</a></li>
-    </ul>
-  </nav>
-
   <header class="hero" id="start">
     <div class="hero-inner">
       <h1>Patrik<br>&amp; Alice</h1>
       <p class="eyebrow">Vi gifter oss<br>2027.07.17</p>
-      <p class="venue">
-        <span>Undersviks Gårdshotell</span>
-        <span>Mer information kommer med inbjudan.</span>
-      </p>
     </div>
 
     <!-- Egenritad blomillustration i linjer -->
@@ -294,60 +284,12 @@
     </div>
   </section>
 
-  <!-- ========== OSA ========== -->
-  <section class="section cream" id="osa" aria-labelledby="osa-title">
-    <div class="section-inner">
-      <h2 id="osa-title">OSA</h2>
-      <p class="soon">Här kommer sista svarsdatum och en knapp till formuläret.</p>
-      <!-- Senare: <a class="btn" href="LÄNK TILL FORMULÄR">Svara här</a> -->
-    </div>
-  </section>
-
-  <!-- ========== PROGRAM ========== -->
-  <section class="section coral" id="program" aria-labelledby="program-title">
-    <div class="section-inner">
-      <h2 id="program-title">Program</h2>
-      <p class="soon">Här kommer dagens tidslinje och klädkod.</p>
-    </div>
-  </section>
-
-  <!-- ========== HITTA HIT & BOENDE ========== -->
-  <section class="section cream" id="hitta-hit" aria-labelledby="hitta-title">
-    <div class="section-inner">
-      <h2 id="hitta-title">Hitta hit &amp; boende</h2>
-      <p>Lördagen den 17 juli 2027 samlas vi hos Undersviks Gårdshotell. Spara datumet i kalendern.</p>
-      <a class="btn" href="https://www.google.com/maps/search/?api=1&amp;query=Undersviks+G%C3%A5rdshotell" target="_blank" rel="noopener">Visa på karta</a>
-
-      <h3>Vägbeskrivning</h3>
-      <p class="soon">Här kommer adress och resetips.</p>
-
-      <h3>Boende</h3>
-      <p class="soon">Här kommer bokningsinfo och alternativ i närheten.</p>
-    </div>
-  </section>
-
-  <!-- ========== MER ========== -->
-  <section class="section dark" id="mer" aria-labelledby="mer-title">
-    <div class="section-inner">
-      <h2 id="mer-title">Mer</h2>
-
-      <h3>Önskelista</h3>
-      <p class="soon">Här kommer våra tankar kring present.</p>
-
-      <h3>Bilder</h3>
-      <p class="soon">Här kommer några bilder på oss och platsen.</p>
-
-      <h3>Bra att veta</h3>
-      <p class="soon">Här kommer svar på vanliga frågor.</p>
-    </div>
-  </section>
-
   <footer>Patrik &amp; Alice &middot; 2027.07.17</footer>
 
   <script>
     (function () {
-      // 17 juli 2027, klockan 00:00 svensk sommartid (UTC+2)
-      var target = new Date("2027-07-17T00:00:00+02:00").getTime();
+      // 17 juli 2027, klockan 13:00 svensk sommartid (UTC+2) = vigseln
+      var target = new Date("2027-07-17T13:00:00+02:00").getTime();
       var d = document.getElementById("d"),
           h = document.getElementById("h"),
           m = document.getElementById("m"),
@@ -368,24 +310,6 @@
       }
       tick();
       setInterval(tick, 30000);
-
-      // Markera aktuellt avsnitt i menyn
-      var links = document.querySelectorAll(".nav a");
-      var sections = [];
-      links.forEach(function (a) {
-        var s = document.querySelector(a.getAttribute("href"));
-        if (s) sections.push({ link: a, el: s });
-      });
-      function mark() {
-        var y = window.scrollY + 80, current = null;
-        sections.forEach(function (s) { if (s.el.offsetTop <= y) current = s; });
-        sections.forEach(function (s) {
-          if (s === current) s.link.setAttribute("aria-current", "true");
-          else s.link.removeAttribute("aria-current");
-        });
-      }
-      window.addEventListener("scroll", mark, { passive: true });
-      mark();
     })();
   </script>
 </body>

@@ -200,10 +200,106 @@
     .coral .btn:hover, .coral .btn:focus-visible { background: var(--red); color: var(--cream); border-color: var(--red); outline: none; }
     .dark .btn:hover, .dark .btn:focus-visible { background: var(--coral); color: var(--red); border-color: var(--coral); outline: none; }
 
+    /* ---------- Karta: var gästerna kommer ifrån ---------- */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+    button.btn { background: none; font-family: inherit; cursor: pointer; }
+    .map-layout { display: grid; gap: 32px; align-items: center; }
+    .map-preview {
+      --h: min(62vh, 520px);
+      display: block; justify-self: center;
+      height: var(--h); width: calc(var(--h) * var(--ar, 0.45));
+      padding: 0; border: 0; background: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .map-preview svg { display: block; width: 100%; height: 100%; }
+    .map-preview:focus-visible { outline: 2px solid var(--coral); outline-offset: 6px; border-radius: 12px; }
+    @media (min-width: 900px) {
+      .map-layout { grid-template-columns: 1fr auto; gap: 64px; }
+      .map-preview { --h: min(70vh, 600px); }
+    }
+
+    .map-svg { touch-action: none; user-select: none; -webkit-user-select: none; }
+    .map-svg .land  { fill: rgba(255, 241, 236, 0.07); stroke: var(--coral); stroke-width: calc(1.2px * var(--k, 1)); stroke-linejoin: round; }
+    .map-svg .lakes { fill: var(--red); stroke: var(--coral); stroke-width: calc(0.9px * var(--k, 1)); stroke-linejoin: round; opacity: 0.9; }
+    .map-svg .arc   { fill: none; stroke: var(--cream); stroke-opacity: 0.8; stroke-width: calc(1.4px * var(--k, 1)); stroke-linecap: round;
+                      stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .map-svg.is-drawn .arc { stroke-dashoffset: 0; transition: stroke-dashoffset 1.4s ease; transition-delay: var(--d, 0s); }
+    .map-svg .dot   { fill: var(--cream); stroke: var(--red); stroke-width: calc(1.5px * var(--k, 1)); }
+    .map-svg .ring  { fill: none; stroke: var(--cream); stroke-opacity: 0.55; stroke-width: calc(1px * var(--k, 1)); }
+    .map-svg .heart { fill: var(--cream); stroke: var(--red); stroke-width: 1.5px; stroke-linejoin: round; }
+    .map-svg .lbl   { fill: var(--cream); font-family: var(--sans); font-weight: 500; font-size: calc(12px * var(--k, 1));
+                      letter-spacing: 0.04em; paint-order: stroke; stroke: var(--red); stroke-width: calc(3px * var(--k, 1)); stroke-linejoin: round; }
+    .map-svg .lbl.hotel { fill: var(--coral); font-weight: 700; font-size: calc(13px * var(--k, 1)); stroke-width: calc(5px * var(--k, 1)); }
+    .map-svg .lbl.is-off { display: none; }
+
+    .map-overlay {
+      position: fixed; inset: 0; z-index: 40;
+      background: var(--red); color: var(--cream);
+    }
+    .map-overlay[hidden] { display: none; }
+    .map-overlay .map-svg { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; }
+    .map-overlay .map-svg:active { cursor: grabbing; }
+    .map-close, .map-ctl button {
+      border: 2px solid var(--cream); background: var(--red); color: var(--cream);
+      font-family: var(--sans); font-weight: 700; cursor: pointer; line-height: 1;
+    }
+    .map-close {
+      position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
+      padding: 11px 18px; border-radius: 999px; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    }
+    .map-ctl {
+      position: absolute; right: max(14px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .map-ctl button { width: 44px; height: 44px; border-radius: 50%; font-size: 22px; }
+    .map-ctl button.reset { font-size: 15px; }
+    .map-close:hover, .map-close:focus-visible, .map-ctl button:hover, .map-ctl button:focus-visible {
+      background: var(--cream); color: var(--red); outline: none;
+    }
+    .map-hint {
+      position: absolute; left: max(16px, env(safe-area-inset-left)); top: max(22px, env(safe-area-inset-top));
+      margin: 0; font-size: 12px; line-height: 1.5; letter-spacing: 0.08em; opacity: 0.85; transition: opacity 0.6s;
+      pointer-events: none; max-width: calc(100vw - 150px);
+    }
+    .map-hint.is-gone { opacity: 0; }
+    @media (prefers-reduced-motion: no-preference) {
+      .map-overlay { animation: mapfade 0.25s ease; }
+      @keyframes mapfade { from { opacity: 0; } to { opacity: 1; } }
+    }
+    @media (prefers-reduced-motion: reduce) { .map-svg.is-drawn .arc { transition: none; } }
+
+    /* ---------- Flytande O.S.A.-knapp ---------- */
+    .osa-fab {
+      position: fixed;
+      right: max(16px, env(safe-area-inset-right));
+      bottom: max(16px, env(safe-area-inset-bottom));
+      z-index: 20;
+      padding: 12px 20px;
+      border-radius: 999px;
+      background: var(--red);
+      color: var(--cream);
+      box-shadow: 0 0 0 2px var(--cream), 0 6px 18px rgba(0, 0, 0, 0.28);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    .osa-fab:hover, .osa-fab:focus-visible { background: #7d1a06; outline: none; }
+    .osa-fab.is-hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
+    @media (min-width: 900px) {
+      .osa-fab { padding: 14px 26px; font-size: 14px; right: 28px; bottom: 28px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .osa-fab { transition: none; } }
+
     footer {
       background: var(--coral);
       color: var(--red);
-      padding: 6vh 8vw;
+      padding: 6vh 8vw calc(6vh + 56px);
       font-weight: 700;
       font-size: 13px;
       letter-spacing: 0.2em;
@@ -351,8 +447,8 @@
   <section class="section cream" id="osa" aria-labelledby="osa-title">
     <div class="section-inner">
       <h2 id="osa-title">O.S.A.</h2>
-      <p class="soon">Här kommer sista svarsdatum och en knapp till formuläret.</p>
-      <!-- Senare: <a class="btn" href="LÄNK TILL FORMULÄR">Svara här</a> -->
+      <p class="soon">Här kommer sista svarsdatum.</p>
+      <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSefS7AbVyNomesi2PPdSI_KITFqRreCFOPYNZSIcfvltA-tDA/viewform?usp=header" target="_blank" rel="noopener">Svara här</a>
     </div>
   </section>
 
@@ -363,6 +459,21 @@
 
       <h3>Önskar ni ge något</h3>
       <p class="soon">Här kommer våra tankar kring present.</p>
+    </div>
+  </section>
+
+  <!-- ========== KARTA: VAR GÄSTERNA KOMMER IFRÅN ========== -->
+  <section class="section dark" id="karta" aria-labelledby="karta-title">
+    <div class="section-inner map-layout">
+      <div class="map-text">
+        <h2 id="karta-title">Från hela landet</h2>
+        <p>Vi kommer från Kalix i norr till Malmö i söder. Utforska kartan och se hur alla samlas i Undersvik.</p>
+        <button type="button" class="btn" id="mapOpen">Utforska kartan</button>
+        <ul class="sr-only" id="mapTownList"></ul>
+      </div>
+      <button type="button" class="map-preview" id="mapPreviewBtn" aria-label="Öppna kartan över var gästerna kommer ifrån">
+        <svg class="map-svg" id="mapPreview" aria-hidden="true" focusable="false"></svg>
+      </button>
     </div>
   </section>
 
@@ -381,6 +492,8 @@
       <p class="soon">Här kommer svar på vanliga frågor, till exempel om barn, väder och fotografering.</p>
     </div>
   </section>
+
+  <a class="osa-fab" id="osaFab" href="#osa">O.S.A.</a>
 
   <footer>Patrik &amp; Alice &middot; 2027.07.17</footer>
 
@@ -426,7 +539,316 @@
       }
       window.addEventListener("scroll", mark, { passive: true });
       mark();
+
+      // Dölj den flytande O.S.A.-knappen när O.S.A.-avsnittet syns
+      var fab = document.getElementById("osaFab"), osa = document.getElementById("osa");
+      if (fab && osa && "IntersectionObserver" in window) {
+        new IntersectionObserver(function (entries) {
+          fab.classList.toggle("is-hidden", entries[0].isIntersecting);
+        }, { threshold: 0.15 }).observe(osa);
+      }
     })();
   </script>
+  <!-- Karta i helskärm (öppnas från knappen i avsnittet "Från hela landet") -->
+  <div class="map-overlay" id="mapOverlay" role="dialog" aria-modal="true" aria-label="Karta över var gästerna kommer ifrån" hidden>
+    <svg class="map-svg" id="mapBig" role="img" aria-label="Karta över Sverige med kurvor från gästernas orter till Undersvik"></svg>
+    <button type="button" class="map-close" id="mapClose">Stäng</button>
+    <div class="map-ctl">
+      <button type="button" id="mapZoomIn" aria-label="Zooma in">+</button>
+      <button type="button" id="mapZoomOut" aria-label="Zooma ut">&minus;</button>
+      <button type="button" class="reset" id="mapReset" aria-label="Visa hela kartan">&#8962;</button>
+    </div>
+    <p class="map-hint" id="mapHint">Nyp, scrolla eller dubbelklicka för att zooma. Dra för att flytta.</p>
+  </div>
+
+  <script>
+    /* Karta: var gästerna kommer ifrån.
+       Lägg till en ort: en ny rad i TOWNS nedan, { n: "Namn", lat: 00.000, lon: 00.000 }.
+       Lägg till side: "l" om namnet ska stå till vänster om pricken. */
+    (function () {
+      "use strict";
+      var NS = "http://www.w3.org/2000/svg";
+      var S = 200, K = Math.cos(62 * Math.PI / 180), LON0 = 10, LAT0 = 70;
+      function proj(lon, lat) { return [(lon - LON0) * K * S, (LAT0 - lat) * S]; }
+
+      var LAND = "M997 193l5 3 12 2 6 5 5 1 2 3 0 3-2 3-3 2 0 4 2 2 16 5 13 11 7 9 2 3 7 0 2 1 5 13 3 2 8 2 8 6 5 3 2 6 17 4 11 13 0 3 4 3 21 0 7 1 0 3 8 1 6 2 4 1 4 2 5 0 8 8 6-2 2 2 4 7 3 3 14 7 1 2 1 5 6 6 1 4 0 4 1 3-1 8 0 2 1 2 2 0 8-5 3 0 3 3 5 16 9 7 8 8 7 2 2 3 0 3-3 4-3 2-6 2-4 3-1 3-1 5 1 21 3 16 3 9 1 5-8 6 1 2-4 8-1 4 1 5 3 3 11-2 7 4 8 2 1 1-1 15 3 1-2 7-2 3-11 4-2 2-1 7 1 1 1 1-1 5-2 3 0 4 8 11 1 8 4 9 2 3 5 2 2 3 6 10 5 7 7 17-1 2-1 0-4 1-2 3-3 5 1 13-2 11 1 7-1 6-7 5 0 2-2 2-5 3 0 4-5 2-2 3-1 5 2 6 1 8-1 10 2 12 4 10 2 3 3 3 10 3 2 2 6 15 4 5 4 13 0 7 4 8 2 8 4 6 0 3-2 4-4 1-6-2 2 3-3 1-4-1-3 1-1 5-1 1-4-3-2-4-1 1-5 0-2-1-2-5-2-2-5 0-1 1-4 6-1 0-1-3-8 0-4-1 1-3-1-1-1 0-1 1-1 3-3 3 2 2-1 5-3-1-1-1-1-3 0-7-2 1-4 5-2 0-6-6-3 0-1 1 0 4 1 2 4 4-8 5-2 2 0 4-3 2-2 0 1-5-4-6-5-1-5-2-2-4-2-1-2 1-2 0-2-3-3-8-2-3-10-8-2-1-2 1 5 7 1 13-1 6-2 3-1 1 0-5-2-2-6-1-5 4-1-2 1-2 2-3-2-3-4-4 1-2-7-2-4 1 0 3-4 2 4 5 0 2-1 1-3-1 4 8-4 5-3-2-4-3-4 0 4 5 9 2 2 2 1 3 1 5-2 0-2 2-1-5-2-2-3 0-2 1 1 3-1 3 2 7-2 1-7 0 7 3 4 0 2-4-1-2-2-3-1-2 1-2 2 1 2 4-1 1 5 2 1 1-4 3-1 2 1 2 6 2 0 1 2 6-2 2-4-5-1-1-5-1-2-3-2 0-1 1 1 3-3 0-9-7-7-2-5-5-4-1-3-4-6-2-1-1-4-6-3-2-1-2 2 9 5 5 12 6 8 6 7 4 4 5 1 1 2 0-3 2-5 0-3 1-2 4-2-2-3 2-13-4-2 0 4 7 3 2 2-1-3-3 3 0 5 7 3 2-2 7-1 1-2 0-1-2-3-4-1 3 1 6-1 1-2 0-2-1 0-2-6 4-3 0-8-3-2 1 2 2-5 1-2-1-2-4-2 0-4 2 0 1 4 1 1 0 0 2-7-1-3 0-2 3 2 2-4 3 4 1 5 6 2 1 2-1 0-3 2 0 7 8 2 2-1 3-2 3-5 3-4 0-3-1-3-8-2-4-2-2-3-1-3-3-6-8-3 1 2 1-1 3-4 0-1 3 12 3 2 2 6 10 5 6 7 12 1 4-2 2-5 1 2 2-2 8 0 1 4 2-2 2-8 0-1 1 1 3 2 4-4 2-4-1 0 3-3 3-1 2 2 2-2 1-11 1-1 0 0 2 1 2-1 3-2 3-2 1 1 6-4 3 1 4-2 1-5 1-1-1-1-6-2 0-1 1-1 2-1 2 1 3 4 2-1 3 2 2 2 1 3 0 6-2 6 3 3 1 0 3-1 1-5 0-2 0 4 6 4 4 0 2-1 0-1 1 1 4-2-1-4-5-5-2-4-6-2 1-1 3 0 3 1 3 2 3 9 2 1 3-1 0 0 2 1 3 5 2 2 3 3 5 1 0 0-3 1-5 2 1 6 9 1-5 1 0 1 6 1 2 1 2 4 0-3 2-1 1-2-1-3-5-7 6-2-4-1 0-1 2 2 0 2 4 1 1 3-2 5 0 1 6-1 3 0 2 1 1 2 1 1-1 1-4 4 2 0-3 1 0 2 3 0 3-1 2-2 0-2 2-3 2-6 10-8 8-5-7 0 4 0 3 1 3-4 3-2 0-2-2 0 1-12 17-4-1-3 7-7 8-2 4 1 3 0 4-4 8-1 4 1 2-1 2-1 6-3 4-2 1-2 3-4 15-5 4-4 0-1 1 0 3 1 1 3 1-4 6-1 0-2-5-1-1-2 0-4 4 0 3-1 2-1 0-1-1 1-2 0-2-4-4-4 10-2 2-2-2 0 12-2 6-1 0-2 0-1-2 1-7-2-5-1-1-1 3 0 12-1 5-1 1-3-4 2-10 0-3-4 7-1 5 1 5-2-1-7 1-3 2-2-5-2 0-4 2-2 4 2 7-9-4-5 3-2 6-10 10 0 2 1 5 0 6-2 1-5 5-5-3 0-7-2-1 0-3-4-4-5-2-3-5-2-1-2 0-2 2 2 2 2 1-1 5 1 2 2 1 3 2-2 2-3 0-1 1 5 7 1 4-1 1-5-4-8-10-2-1-1 1 3 7-2 1-5-5-2 1 0 3-1 21-1 2-1 2-1-1 0-3-2 3-5 1-2 2 1 3-3 8 2 0-2 4-2-1-4-4-1 4 1 3 6 1-1 2-2 0-2 2-1 4-1 0-8-9 1-3-6-5-2-2-1 1 1 3-2 1-5-2-4 0-1 0-2 1 2 2 15 7-2 2-3 2-6 0 1 2-2 2-1 0-1-2-1-6 2 0 5 0 0-2-9-2-3 1 1 1 4 13-13-5-5 0 0 2 2 0 2 1 4 4 1 4 0 2-2 1-6-3-2 2-1 6-2 2 3 0-5 4-1 6-1 1-4-6-3-1-1 0-2 1 5 5 1 2-6-1-3-4 0 3-1 2-3 2-5 1 2 2 24 0 3 1 2 2 0 3-1 1-1-1-1-3 0 0-1 4-2 1-3-1-6-3-1 1-1 4 4 3 2 1 5-1 1 1-1 4-3 1-7-2 1 3 5 1 1 3-1 3-4 1-2 3-2 1-5-1-1-3-5-6-2 0 1 3-4 0 1 4-1 3 2 1 3-4 2 2-4 8-2 1-3 4-1-2 0-1 2-4-1 0-3 6-2 2-6-1 1-2-1-2-6 0 2-3 9 1 2-3-6-3-1-3 0-1-2 0-3 3-3 3-2 3-3-1-1-3 0-7-1-4 1-3 0-3-4 1-3-9-1-3-3-2 2-4-2 0-4 4-5-4-2 1 12 11 3 4 4 10 1 6-2 5 4 3 3 3 1 7 3 4 0 4-1 6 1 4-2 1-4-3-6 0 2 2 14 7 1 4 1 2-2 1-7 6 0-1-1-9-2-1-1 2-1 11-3 2 1 3-5 7-1 1-4-4-5 0-4 1-2 2-1 2 0 4 4 2 1 3-13-1-1-1-3-4-5-8-5-7-2 1-1 5-5 2-1 2 0 4 5 7 0 5-2 1-2 0 2 3 1 2-1 5 2 4 1 1 4 0 2 2 2 6 1 1 0 1-1 0-2 1 9 5 1-1 4 1 5 4-8 5-3 1 0-1 3-5-2-1-2 0-2 3 0 11-3 10 0 6-1 2-2 1 2 2-1 2-3 5 3 4 0 1-6 2 0 6-3 1-1 4 0 5 1 5 0 1-1 2-1 3 1 2-1 4 1 2 5-1-1 3-2 1 0 1 2 1-1 9 1 3 1 2 8-3 3 4 0 5-2 11-2 1-1 0-3-2-7-14-3-2 2 9-3-1-2-2 1-3-4-3-4-1-8 0 1 2 2 1 3 0 6 4 0 3-3 2-6 2 0 1 2 2-2 1-5-2-2 2 12 3 3 2-3 1-7-3-6 1 0 1 3 0 2 1 1 2-4 2-4 1 2 2 10 2 0 1-9 0-1 1 4 3 4 2 0 1-4 0 0 1 4 3 1 3-2 4 1 5 2 1 1-3 1 0 1 0 0 3-3 2-2 2-3-4-1 3-2 2 0 2 3 6 3 3 3 1 0 3 7 4-3 1-3-1-5-3 1 4 8 5-4-1-2 0-5-5-4-1 0 1 3 1 5 7 2 3 1 5-1 2-3 1-1 3 3 3-1 5-2 3 2 3 0 2-1 2-2 0 4 1 1 3 0 1-2 1-1 5 0 3 2 2-3 3 5-1 2 1 2 2-6 1-2 3-1 8 2 3 3 0-1 3 2 4 1-1 1 1 4 12-3 1 1 4 1 0 1 0 0 7 1 1 3 1 1 1-2 4-4 2-2 3-4 3-2 1 0 2 2 0 3-2 1 1 2 3 3 1 5 5-3 3 0 1 1 1 4 0 3-3 13-2 2 0 3 4 4 2 1 2-1 2-4 3 3 14 3 2 7 1-1-7 3-6 5-4 10-3 2 0 3 2 2 7-1 5-2 2 0 2 3 0 2 2 7 7 2 6 3 4 3 3 8 4-5 5 0 1 2 5 6-6 3 0 3 1 6 0 2 2 0 5 3 3 0 1-4 1-1 1 13 5 4 4-4 2-15-6-8-12 1 7 11 15-1 0-4-4 1 4 2 3 4 4 4 4 2-1 2-3 0 9 2 11 1 0 1-3 0-4-2-6 5-2 2 0 4 4 3 1 1 2 1 13 4 6 1 3-3-10-1-5 1-6 4-2 1 0 1 10 7 25 2 2 4 2 4 3 0 3 2 3 1 0 0-5 3 2-1 12-3 0-1-1-10-16-3-2 5 9 0 3-1 4-6 9-2 2-2 0-6 1-1 1-1 3 2 0 3-2 24-1 4 3-1 4-2 3-2 1-5 2-2 0-1-1-3-5-1 3-2 3-3 1-6 3-3 2 0 3-4 0 0 4-2 1 5 0-1 2-3 4-3-3-1 0 3 6-5 4-4 2-5 6-5 2-7 9-3 3-3 0-8 0 0 1 4 3-2 1-4 0 4 3-1 2 2 2 4 1-3 3-6-1-5-1-3-3 2-2 3 2-1-6-1-1-1-1-3 3-2-2-1 0-3 3 0 2 1 4-3 3-2 0-3-3 13 14-3 1-2-1 0 3 7 0 3-2 1 0 0 3 1 0 3-9 6-2 7 1 5 3-2 3 3 1 1 0 1-3-3-9 5 0-6-5-1-3 6 0 2 1 3 3 0 4 7 4-1 3-6-2 9 5 1 3-1 3-2 1-5 1-4 1-6-2-9 1-2-2 1-4-2 0-3 2-2 2 2 3 2 4-3 0-1 1 0 3 8 4 5 5 1 4-8-8-2 0 0 3 1 1 3 1 2 5 2-1-1 4 4-1 0 2-1 4-1 1-1-1-2-1-7 4-2 2 2 0 2 2-9 5-3 1 5-4-1-2 1-1 0-1-3 0-3 4-5 1-3 6-1 1-5 0 1 4-2-1-2 0-1 1 2 3-4 8-1 4 0 6 0 2-3 3-2 0-1-1-1 11-2-3 0-3 0-2-1-4-1-1-2 0-1-1-4-6 1 7 2 3-2 5-1 1 0-1 1-6-3-2 0-8-1-4 1-4 1-6-1-10 1-7-1-1-2 2-1 11-1 1-4-5 0-3 2-7-1-5-2-3 1 7-2 5-3 3 1 4-1 9 2 2-3 11-1-1-2 3 2 2 2 0-1 3 2 2-1 4-2 1-5-1 2 4 3 3 0 1-2 0 1 1-3 0-7-6-3-2 0 1 2 2 0 2-1 11 3 3-3 2-11-3 3 5 1 3-2 3-5 0-3 0 0 4-10 0-3-2-3-4-2-1-5 3 4 1 1 1 0 4-2 2 2 1 4 0 2 0 0 2-5 7-2 0-6-4-3-1-2 3 4 0 2 2 2 4-3 0-8 3-65-9 0 2 3 2 0 1-1 2-1 1-4-1-2 0 0 1 3-1 0 1 1 2 2-2 4 3 3-4 2-1 3 4 0 3 1 2 1 1 2-1 2-9 1-2 7 5 11 0 2 1 3 3 4 1 2 1-1-4 4 2 0 3 0 3 2 3 2 0-1 2 0 1 3 0-1 3 4 2 6 6-3 1-4 0-2 2 0 2-2 3-6 2-1 2-3-1-11-3-6-4-9-3-3 2 3 0 20 12 3 0 2 1 0 3 0 5 0 2 3-1 1-2 2 2 0 5-13-3 6 7 0 4 1 0 2-1-1-3 6-1 1 0-1 4-2 0-1 4-4 1 0 2 2 0 7 5-2 2 2 1 1 5 1 5-1 1-2-1-1 0 2 4-3 6-5-4-5-7-5-4 2 4 3 4 2 3-3 0 7 13-2 1 0 4-2 0 5 4 1 3-1 2-2-2-3 2 0 1 1 2-2-1-2-6-1-1-1 2 0 3 2 5 3 0 2 6 2-3 0 1 1 5 4 6-2 0-3-3 0 3 3 3 1 2-1 3-2 0-2-2-4-7 0 4-1 2-5-1 0-3-1-4 2 0 2 2-12-16-2 1 0 2 1 3 2 4 6 3-2 3 0 2 0 3-1 1-3-3-4-2 1 3-1 1-2-1 0 1 20 26 3 3-1 1-2 0-4-4-9-15-11-11 2 6 3 4 5 4 4 6 2 4 2 2 5 6-1 1 3 1 2 4-2 0 0 2 2 0 0 1-7 0-5-4 3 6 1 3-1 1-1 1-2-1 1 2 2 0 1 2 1 2-7 7-1-2 1-4-2 1-2-1 2 4-2 2 0 2 2 1 0 2-2 0 0 1 7 0 3 2 6 17-3-1 1 3-3 2 0 3 0 2 2 1 2 1-4 2-1 1 1 4-6-1-2 0-1 5 3 3-2 3 1 2-7 5-2 4 3 6-3 3-1 5 1 6 4 10 2 2 1-1 1 2 2 5-2 1 3 7-1 0-3-1 0-3-1 0-2 2-1 3 0-1-5-1 1 2 2 2 0 1-2 0-1 2-1 3 1 5 2 5-3 8 1 9-3 13 0 2 2 1 3-3 1 1 0 4-1 1-1 0-4-1-5 2 0 1 2 7 0 10-1 3-3 2-1 0-2-3-5 3-1 2-2 6-1 14-3 1-1 5-5 11-2 7-5 33-2 2-1 5-7 9-5 14-3 4-1-1-4-3 2-7 1-4-2-2-4 3-3 0-2-4-1 1-1-2-2-1-2-2-5 7-1-3 1-6 0-1-9 7-1 5-5-6-3 0-2 4-1 4-4 0-3-1 3-2-3-7-2 4-4 3-3 0-4-3-2 2-4 0-1-1 0-5-4 2 1 5-6-3-3-1-4 3-6-1 0 4-1 0-6-5-4 0-3 2-1 3 0 6 2 1 6 16-3 2-2 4-1-3-2 0-1 2-2-1-4 0 0-1 1-2-1-2-1-5-2 3-1-3-3 3-4 1-1 2-7 11-6 4-2 8-1 2-4 2-3 6-3 9-1 19 1 3 5 6 1 2 0 7 1 2 3 5 4 7 1 4 0 4-2 3-8 10-4 9-3 5-3 1-8-1-3-1-8-6-2-2-3 0-5 3-6-1-14 1-3 5-2 1-4-1-3 1-9 8-3 1-6 0-3 0-15-7-6 0-2-1-3-3-2-1-2 1-3 2-2 0-2-1-4 3-1-1 0-3 2-7 2 0 3 3 2 0 2-1 1-2 0-4 1 0 1 1-1-5-4-9-1-5 1-7 3-4 6-5 1-2 2-5 0-7-4-7-4 1-1-4-2 0-2-1-1-3 2-1 1-4-1-9-4-4-3-2-3-4-2-9-3-4-2-9-3-3-1-2-1-6-9-15-4-11-1-8-4-11-4-3-1-3 18 10 2 3 4 4 3-2 6 0 1-1 2-6 0-3-5-3-5-13-8-7-2-5 3-7 6-2 11 4 5-2 4-10 1-8-3-10-2-8-1-3-3-1-6 2-5 0-4-7-2-7-3-4-1-3-2-8 0-6-6-5-1-3-2-1-3-5-3-1-3-2-3-1-2-3-1-8 1-4-1-6-1-1-6-5-2-3 0-4-3-3 2-3 0-2-3-6-1-7-3 0-1-1 4-5-5-1-4-3 3 0 2-2-2-1-3 0 0-1 2-4 2-1 1-1-1-5-3-7-1 0-3 1-2-2 6-9-5 0 3-1 0-2 0-3-3-7 0-1-1 1-4 5-1 14-1 4-1-4-3 1 1-6-2 1-2-2 1-2-1-9 0-3 1-2 3-3-4-3 2-1-2-3 1-3-1-11 1-5-2-1 0 2-2 2-1 0-1-6-2-5 1-5 6 0 2-4-2 2-6 0-2 0-5-3-2-1 0 4-3 0-1-1 0-4 10-12 0-2-2 0-4 1-6-11-2 0 2-3 2-1-1-4 1-2 5-2 0-2-1 0 0-1 1-1 1-2-3-2 1-3 4-9 1-4 0-3-2-7 1-2 1-1-1-3 3-1 1-3 1-15 3-1 1-3-1 0-1-1-1-1-1-6-3-5 0-4 1-3 6-4-1-2-2 0-4 4-6-1-2 1 0 2-1 1-3 1-6 5-4 6-2 0-3-2 2 5-4-2 0-3 0-4 4-11 2-4 5-7-1-1 1-2 5-3-2-3-2 1-4 6-3-13-1 0 1 13-1 7-2 6-5 8-7 6 2-5 3-3 0-2-5 2-1 0 0-3 2-3 4-1-2-5 0-5-2 1-2 6-1 2-2 0-1 0 8-20-5 9-2 2-2 4-2 2-3-1-2 0-2 5-1-1 0-5-2-6 1-4 1-1 3 1 0-4 3-6-3-2-2-6 2-2 0-7 2-3 1-2-2 0 0-2-1-3 0-6-1-3-3-6 0-6-3 0 0-2 0-3 1-4 2 0-1-3 3-8 0-7-1-1-2-1-1-2 0-9 0-3-4-1-3-2-1-3 1-3 6-4-4 0-2-1 0-3 1-4 6-10 3-2 9-2 3 2 2 10 2 4 2 4 1 2 1 0 1 6 0 13 3 2 6 0 6-2 5-5 8-34 0-10 3-13 3-9 0-9-2-13-11-40 0-4 0-5 2-3 13-8 2-3 4-8 1-14-2-3-3-5-1-3 1-6 3-5 5-1 15 1 4-1 14-12 15-18 3-6 3-8 1-8 0-8-3-19 0-3 8-13 3-9 0-7 0-6-1-6-11-28-10-20-2-8-4-21-2-7-3-9 0-4 2-3 22-7 5 0 11 2 2-1 3-19 8-13 2-4 4-25-1-4-25-35-2-3-3-1-7-1-3-1-3-1-7-11-5-3-11-12-1-3 15-102-1-10-2-10-19-50 0-4 6-21 0-5-5-34 1-4 11-15-22-58 20-33 1-4 0-4-4-21 11-11 18-31 19-29 7-7 21-14 24-6 66 16 2 0 2-2 15-30 2-3 0-4-5-47-1-5-4-2-11-3-28-19 50-81 13-19 2-8 3-18 1-5 2-3 8-7 3-6 0-9-1-20 5-47 1-3 6-13 2-4-1-9-10-56 48-6 41-24 1-3-1-10-5-25-1-5 23-22 35-58 8-9 18-15 5-3 3-2 1-4 3-26-1-3-29-45 5-14 2-3 16-2 6-3 5-5 10-13 2-4 14-46 2-4 2-3 39-26 7-12 2-1 54 27 3-1 23-37 2-8-5-39 2-25 1-3 25-8 4 3 16 12 5 1 32-2 41 16 42 15 4 0 4-3 22-22-27-13 18-13 8-11 10-21 1-8 0-18-1-3-22-22zM669 2536l-3 1-2 2-3 7 2 6 0 3-1 7-2 2-1 6-4 9-1 8-2 3-4 2 1 3 2 1-3 5-3 5 1 7 0 4-2 4-2 10-1 4-4 3-1 3-2 10-5 20-2 10-1 4-2 1-1 2 0 6 0 1-1 4 0 6-5 14 0 12-2 3-1 5-5 13-3 4-2 0-2-2 0-8-1-6 1-4-1-13 1-4-2-11 1-17 2-8 2-5 1-6 16-46 1-2 8-2 1-3 2-7 4-13 5-11 4-12 2-16 3-3 1-3 1-15 5-8 3-3 1 0 1 3 1 1 1-3 1 0zM849 2426l4 9-7 1-2 3-1 7-2-3-1 0 0 3-1 4 1 4-4 1-4 0-4-2-1 0 0 5-1 7-3 10 0 2 4 2-1 5-1 6-2 8 1 3-1 3 1 2 1 0 2 0-2 4 8 3 1-3 2 2 2 4 0 5-1 1-3 0-2-1-2 2-4 2-3 2-4 7-4 4-1 3 0 3 1 1 2-1 1 1 0 6-3 2 0 1-8 2-3 2 0 2 1 0 0 1-2 1-11 7-3 2-2 4 7 0-2 2-7 4-1 2-1 11 1 2 1 2 4 1-5 0 0 2 1 1-4 4-1 4-10 7-3 1-3-2 6-13 0-7 1-1 4-2 1-1 2-11-6 7-2-1 0-2 2-4 0-2-1-2 2-4-4-2-3-17-6-6 1-4 1-3 4-4 1-3 0-4 0-3 1-3-3-6 0-3-3-13 0-4 1-8 3-6 16-19 13-26 3-4 5-3 4 2 1-1 3-10 4-6 2-1 2-1 2 1 2 6 0 5 1 1 1 4 2 3 0-5 3-5 1-3-1-4 1-1 6-1-2 4 2 2 3 0 0-2 1-2 4 0 1 0-1 2 1 4 1 2zM871 2405l3 0 1 0 2 2-1 1-2 1-1 2-5-1-4 3-4 2-2 3 2 3 0 3-3 7-3-2-2-3-3-7 0-2 2-5 2-6 1-1 2-1 3 0 1-1 4 0 2-1 0 3 2 1zM163 2388l1 6-1 6-2 2 0-1 0-3-2-1-1 2-3 10-1 1-2-1-2 4-2 0-2-3-2 0-2-9 0-1 1-1 4 0-2-1-4-1 0-3 0-3 2-1 4 1 9 0 5-4zM170 2354l0 8 0 9-1 4-4 1-5 4-5-2-2 2-2-4-2-1-3 1-2 3-2 4-2-1-3-3 0 7 0 0-1-7-4-5 0-3 2-3 9-11 4-1 3-3 5 0 1 0 0-5 2-2-1-3 1-1 2 0 3 1 1 4 4 4zM876 2326l-4 4-3 1-4-2-2-8 3 0 2 2 6 1zM792 2148l-2-4-6-4 11 0 5 2 9 6-7 0-2-2 0 4 1 2 4-1-2 4-3-1-5-4zM803 1935l2 2-1 2 0 0-5-3-5-7-5-3-1-4 0-18-2-4 1-2 1 0 1 1 2 4 0 4 4 4 1 3-2 0-2-2-1-1 6 16 1 2 1 0 2-3zM1018 1246l2-5 4 0 1 4-4 4 1-1-1-2-1-1zM797 2180l0 3-3 6-2 1-1 5-1 3-1 0-1 0-1 1-1-1-3-5 2-1-1-3 2-1 0-1 0-3 9-7 1 0zM818 2158l4 1-2 1-6 5-1 0 3-7 1 0zM826 2141l1 1-3 8-1 0-4-2 0-3 3-4 2-1zM815 2132l-4-6 1 0 5-1 4 5 0 4 0 2-2 2-4 2-1-1 2-2zM761 2123l2-1 10 3 2 2-5 0 2 3-1 2-2 0-2 0-4-3-2-5zM838 2113l-3 6-2-1-1-3 1-3 4-1 1 1zM813 2099l-2 1 0 2-1 0-2-1 0 1-1 1 1 4 0 2-1 1-2-3 1 7-1 0-2 1-3-8-1-4 0-1 3-1 1 0 0 3 1-2 1-1-2-1 0-2 4-6 4-2 2 0 1 1 2 2 5-1-1 1-5 3zM843 2073l1 2-2 1-3 0-1 0-2 7-2 1-2-1 0-2 1-2 6-9 2-1zM831 2080l-2 2 0 1-6 3-1-1 0 0 4-3 6-8 6-5 0 1zM845 2038l0 2-1 2-3 1-2-2-1 2-3 0-1-2 1-3 6-11 3 3 1 2zM819 1961l1-1-2-2 1-1 3 1 1 3 2 2 0 2 1 0 1 3-4 2-4-1-1-6zM536 2777l2-1 0 1-3 2 0 6-1 0-3-3-1-3 1-3 1-1 2 2zM647 2333l2-1 1 1-4 4-3-1-2-2-4-10 1-2 3-2 3 0 0 2-1 1-2 1 2 2-2 1 0 2 4 4zM781 2206l3-2 1 1-1 2-1 1-4 3 0 0-1 1 3 3-8 2-2 2-1-1 0-2 2-5 4-3 2 0zM770 2198l-1 3-1-1-2 0-1-1 0 6 0 1-2 1-1 0-2-3-4 4 0 0 1-5 2-2 0-3 2-3 2 1 4-1 4 0 0 1-3 2zM724 2201l-1 12-2 3 1 4 0 0-3-5 0 1-1 0-1-2 0-4 0-1-1 0 0-5 2-8 0-8 0-2 2 0 0 2 2 2 1 5zM763 1462l-4 2-5-1-2-4 2-8 1-2 2-1 4 3 2-1 3 1-1 7 0 1-3 0 0 1 1 1zM1023 1249l5-4-1 6 0 6-3 4-1 1-1 0-2 1 0-2 2-9zM1165 909l1 1-1 2-3 2-8 0 0 0 0-5 2 0 2 2 4-3 1 0zM1141 914l-1-3 1-5 0-1 2 0 3 2 1 1-1 2 2 4 0 2-2-1zM1147 899l-2-4-1-3 3-1 1 0 7 4 2 0 3 4 0 2-1 1-1 0-2-3-3-2-1 1 0 3 2 3-1 0zM1181 883l4-2 2 1 0 2-3 2 0 1-1 2-2-1 0 1-1 0-3-3-1-1 1-1zM1217 857l2 3 0 1-2 0 0 1 1 5-4-4-3-3-1-4 0-3 2-2 2 1 3 1 0 2-2 0zM1295 849l1 4-3 5-3 3-4-2-1-3 0-5 0-1 2 3 1-3 3 2 2-2 2 1zM1196 857l-1-2 0-1 1-7 1-1 4 4 2 7-1 2-4-1z";
+      var LAKES = "M387 2187l-2 5-3 3-3 3-5 1-1 1 0 5 3 3 1 1 0 1-3 14-1 3-2 3 1 5-2 2-1 1-2-2-3 1-1 3 1 3 1 3-4 6-12 10-3 4-3-1-1-5-2 0-7 6-2 3-2 0-3-2-3 4-7 3-4 5-4 14-3 5-3 1-4 0-3-1-2-5 4-7 2-9-6-1-11 4-1-2-1 1-2 5-1 2-2 1-5-3 6 7-3 1 1 2 1 1-3 5-2 2-6 3-1 1-2-1-2 3-8 3 2 6-9 10-4 2-4-4 7-7 3-11 2-3-5 4-6 13-6 1-5 0-6 3-2 0-1-2-1-3 2-5 1-1 4-8 4-2 4-1 3-6 4-5-1-2 10-18 0-2-1 0-5 0-2-1-4-6-1-9 3-12-2 0-3 3-1 1-2-2 0-3-3-4 3-3 1 0 1 5 2 1 3-1-2-2-1-2 0-6 0-7 0-5-3-1-1-4-1-3 2 0 8 12-2 9 0 3 5 4 1 0 1-5 4-4-1-4 2-14 1-2 2-2-1-4 4-5 1-3-2-5 0-2 1-1 1 1 1 4 4-6 4-1 1-3 1 0 1 3 1 0 2-3 1 4-1 4 1 1 5 0 1 0 0 2 2-1 2 0 3 4 4 1 1 2 0 3-1 2-3 3 5 3 2 6 1 2 5 1 1 2 1 4 6-7-2-8-2-2 1-6-1-6-1-6-2-6 0-3-2-8-4-6 1-2 0-3-2-4 0-7-3-4-1-3 3 3 3-2 0-3 0-4-1-4 5-7 0 8 2 4 3 1 4 0-3-6 1-4 3-3 2 0 5 2 3-3 3 3 3 1 3-1 11-7 7-3-2 4 2 3 1 0 3-2 1-2 4 0-1 4-3 4 1 3-1 1 1 2 7 0-3-5 1-2 2 0 2 4 2-1 1 1-1 2 0 1 2 1 2-1 1 0 1 4 2-1 0-7 1-2 2 0 2 8 2 2 1-1 1-5 2 1 2 3-2 1-2 2 2 10 0 8-3 5-2 6-4 4-3 9 3 7 4-2 4 0-1-4 2-2-1-3 1-2 1 0 3 7-2 4 2 1zM462 2237l-1 6 1 3 2-4 1 0 1 2-2 9-2 8 0 13-7 9 2 1 2 0 2 3 3-1 2 1 1 3-1 1-1 2 1 2 2 0-1 2-3 2-3 6-4 3-1 0-2-3-2 0-2 1-7 13-4 3-6 13 2 6-3 9 0 7-5 11-2 10-3 3-3 7-3 11-7 6-2 3-5 14-1 9 0 5-2 3-2 2-5 2-2-1-2-13-3-9-1-9 3-6 3-9 0-3 5-19 1-10 3-9-1-4 2-2 2-10 3-3 2-3 6-19 4-2 0-7 2-3 2 0 1-1 2-9 0-3 1-12 3-5 18-18 4-5 1-6 5-6 4-1 1-3 0-7 1-2 1 3 4 3 2 3-2 0-1-2-3 4zM598 2141l3-2 2-3-1 5-3 3-24 7-6 5-4 1-6 0-4 3-4 1 1 2 3 1 0 2-1 2-3 1-4 3-12 0-3-1-5-5-3-1-1-1 2-2 2-3 4-1-2-4-7 0-2-4 3-2-2-2-9 3-4 1-6-4-10-1-1-2 3-3 16 4 6-4 2-4 6-1 2 3 4 1 7 0 3 1 3 6 3 1 0-3 2-3-1-2 1-4 1 2 1 4 15 1 4 4 2 1 3 0 3-3 8-1 6-4 3 2zM760 2135l-7 0-3-2-2 0-6 8-2 4 1 7-1 3-2-1 1-6-4-2-8 0 0 1 4 1-1 3-2 1-2 0-2-1 3-1-5-3 1-3-6-2-3 0-3 2 2 2 1 2 0 6-1 1-2-7-6-4-3-5-4-2-8-2 2 8 1 4 2 1 0 2-18-2 0-1 4-1 3-2-4-8 6-2 1-1-1-4-2-1-5 0-8-3-4 0-6 3 0-4-6-6-2-5-3-4-8-7-2-1 1 3-7 0-4-1-1 2 3 2 10 10 1 1 3 0 1 3 0 1-7 0-3-5-7-7-4-6-7 6-6-3-2 3-3-1-29 2-4 0-4-2-4-3-2-6 10 4 10 0 0-1-2 0 0-1 4-3 1 0 2 7 1 2 2 0 2-1-1-2 0-1 3-2 2-4 1 0 5 2 2 0 3-2-5-3 9-2 1-4-5-9 3-2 3-1 2 4 5 3 4 8 5 2 1 0 2-4 2-2 2-7 9 2 4 7 1 1 11 0-1-3-4-4-1-3 3-1 1-2 3 7 4 5 3 1 5 0 2 4 11 9 1 0-1-4 1-1 4 6 1 0 0-5-2-5 1-3-3-12-3-5 4-6-1 7 1 3 2 1 3 5 5 5 2 0 2-2 2 1-2 6-1 1 1 4 3 2 1-3 2 0 7 2 3 8 1 2 2-1 0-2 0-4 5-12-2-7-2-4-12-8-5-5 0-3 5-4-1-3 1-4-2-2-5 0 2 2-4 4-1 3 1 7-2 2 3 7 1 8-5-12-1-1 0-4-2-2-1-2 1-2 4-9-1-1-7 0-4-2 14 0 3-1 2-3 2-9 2 4 2 2-1 4 6 7-2 0-1 2-1 9-2 2-3 1 5 4 6 3 1 0-1-14 2-2 3 17 1 2 4 2 0 2 0 5 2 7-2 1-2 3-2 5 1 4-2 9 2 7 6 4 4 3 3 1 7-2 9 3z";
+      var BOUNDS = { x: 104, y: 193, w: 1226, h: 2738 };
+
+      var HOTEL = { n: "Undersvik", lat: 61.6079, lon: 16.3209 };
+      var TOWNS = [
+        { n: "Stockholm",   lat: 59.3293, lon: 18.0686 },
+        { n: "Göteborg",    lat: 57.7089, lon: 11.9746, side: "l" },
+        { n: "Malmö",       lat: 55.6050, lon: 13.0038, side: "l" },
+        { n: "Kalix",       lat: 65.8570, lon: 23.1430, side: "l" },
+        { n: "Vilhelmina",  lat: 64.6258, lon: 16.6553 },
+        { n: "Gävle",       lat: 60.6749, lon: 17.1413 },
+        { n: "Uppsala",     lat: 59.8586, lon: 17.6389, side: "l" },
+        { n: "Vikbolandet", lat: 58.6300, lon: 16.5800 },
+        { n: "Gideå",       lat: 63.5000, lon: 18.9700 },
+        { n: "Västanå",     lat: 63.3400, lon: 19.1300 },
+        { n: "Kilafors",    lat: 61.2330, lon: 16.5670 }
+      ];
+
+      function el(tag, attrs, parent) {
+        var e = document.createElementNS(NS, tag);
+        for (var a in attrs) e.setAttribute(a, attrs[a]);
+        if (parent) parent.appendChild(e);
+        return e;
+      }
+
+      /* ---------- Bygg kartan i ett svg-element ---------- */
+      function makeMap(svg, opts) {
+        var m = { svg: svg, vb: null, fit: null, opts: opts };
+        el("path", { "class": "land", d: LAND }, svg);
+        el("path", { "class": "lakes", d: LAKES }, svg);
+        var h = proj(HOTEL.lon, HOTEL.lat);
+        m.h = h;
+
+        // Kurvor mot hotellet (böjer åt vänster i färdriktningen)
+        m.arcs = TOWNS.map(function (t, i) {
+          var p = proj(t.lon, t.lat);
+          t.x = p[0]; t.y = p[1];
+          var dx = h[0] - p[0], dy = h[1] - p[1], len = Math.hypot(dx, dy) || 1;
+          var cx = (p[0] + h[0]) / 2 + (dy / len) * len * 0.22;
+          var cy = (p[1] + h[1]) / 2 + (-dx / len) * len * 0.22;
+          var a = el("path", { "class": "arc", pathLength: "1",
+            d: "M" + p[0].toFixed(1) + " " + p[1].toFixed(1) + "Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + h[0].toFixed(1) + " " + h[1].toFixed(1) }, svg);
+          a.style.setProperty("--d", (i * 0.09).toFixed(2) + "s");
+          return a;
+        });
+
+        m.dots = TOWNS.map(function (t) {
+          return el("circle", { "class": "dot", cx: t.x.toFixed(1), cy: t.y.toFixed(1), r: 4 }, svg);
+        });
+
+        // Hotellet: ring + hjärta
+        m.ring = el("circle", { "class": "ring", cx: h[0].toFixed(1), cy: h[1].toFixed(1), r: 14 }, svg);
+        m.heart = el("g", {}, svg);
+        el("path", { "class": "heart", d: "M0 8C-13 -2 -12 -12 -5.5 -12C-2.5 -12 0 -9.5 0 -7.5C0 -9.5 2.5 -12 5.5 -12C12 -12 13 -2 0 8Z" }, m.heart);
+
+        if (opts.labels) {
+          m.lbls = TOWNS.map(function (t) {
+            var tx = el("text", { "class": "lbl" }, svg);
+            tx.textContent = t.n;
+            return tx;
+          });
+          m.hlbl = el("text", { "class": "lbl hotel" }, svg);
+          m.hlbl.textContent = HOTEL.n;
+        }
+        return m;
+      }
+
+      /* ---------- Uppdatera storlekar och etiketter efter zoom ---------- */
+      function update(m) {
+        var svg = m.svg, v = m.vb, rect = svg.getBoundingClientRect();
+        if (!rect.width || !rect.height || !v) return;
+        var scale = Math.min(rect.width / v.w, rect.height / v.h), k = 1 / scale;
+        svg.style.setProperty("--k", k.toFixed(4));
+        var R = m.opts.dot;
+        m.dots.forEach(function (c) { c.setAttribute("r", (R * k).toFixed(2)); });
+        m.ring.setAttribute("r", ((R + 10) * k).toFixed(2));
+        m.heart.setAttribute("transform", "translate(" + m.h[0].toFixed(1) + " " + (m.h[1] - 1 * k).toFixed(1) + ") scale(" + (k * m.opts.heart).toFixed(4) + ")");
+        if (!m.opts.labels) return;
+
+        function sx(x) { return (x - v.x) * scale; }
+        function sy(y) { return (y - v.y) * scale; }
+        var blocks = [];
+        function hit(b) {
+          for (var i = 0; i < blocks.length; i++) {
+            var o = blocks[i];
+            if (b.x0 < o.x1 + 3 && b.x1 > o.x0 - 3 && b.y0 < o.y1 + 3 && b.y1 > o.y0 - 3) return true;
+          }
+          return false;
+        }
+        function box(cx, cy, r) { return { x0: cx - r, y0: cy - r, x1: cx + r, y1: cy + r }; }
+        // Pricka och hjärta blockerar alltid etiketter
+        blocks.push(box(sx(m.h[0]), sy(m.h[1]), 16));
+        TOWNS.forEach(function (t) { blocks.push(box(sx(t.x), sy(t.y), R + 2)); });
+
+        function place(txt, name, x, y, side, charW, gap) {
+          var w = name.length * charW, px = sx(x), py = sy(y);
+          var tries = [side, side === "l" ? "r" : "l"];   // prova först önskad sida, sedan motsatt
+          for (var i = 0; i < tries.length; i++) {
+            var sd = tries[i];
+            var x0 = sd === "l" ? px - gap - w : px + gap;
+            var b = { x0: x0, x1: x0 + w, y0: py - 8, y1: py + 8 };
+            var inside = b.x0 > 4 && b.x1 < rect.width - 4 && b.y0 > 4 && b.y1 < rect.height - 4;
+            if (inside && !hit(b)) {
+              blocks.push(b);
+              txt.classList.remove("is-off");
+              txt.setAttribute("x", (x + (sd === "l" ? -gap : gap) * k).toFixed(1));
+              txt.setAttribute("y", (y + 4.2 * k).toFixed(1));
+              txt.setAttribute("text-anchor", sd === "l" ? "end" : "start");
+              return;
+            }
+          }
+          txt.classList.add("is-off");
+        }
+        // Hotellet har företräde, sedan orterna i listans ordning
+        place(m.hlbl, HOTEL.n, m.h[0], m.h[1], "r", 8.8, 22);
+        TOWNS.forEach(function (t, i) { place(m.lbls[i], t.n, t.x, t.y, t.side || "r", 7.6, R + 6); });
+      }
+
+      function apply(m) {
+        var v = m.vb;
+        m.svg.setAttribute("viewBox", v.x.toFixed(2) + " " + v.y.toFixed(2) + " " + v.w.toFixed(2) + " " + v.h.toFixed(2));
+        update(m);
+      }
+
+      /* ---------- Förhandsvisning i sidan ---------- */
+      var PAD = 60;
+      var prevSvg = document.getElementById("mapPreview");
+      var prevBtn = document.getElementById("mapPreviewBtn");
+      var list = document.getElementById("mapTownList");
+      if (!prevSvg || !prevBtn) return;
+
+      if (list) {
+        var all = TOWNS.map(function (t) { return t.n; }).concat([HOTEL.n + " (bröllopet)"]);
+        list.innerHTML = all.map(function (n) { return "<li>" + n + "</li>"; }).join("");
+      }
+
+      var prev = makeMap(prevSvg, { labels: false, dot: 3.6, heart: 0.8 });
+      var bw = BOUNDS.w + PAD * 2, bh = BOUNDS.h + PAD * 2;
+      prevBtn.style.setProperty("--ar", (bw / bh).toFixed(4));
+      prev.vb = { x: BOUNDS.x - PAD, y: BOUNDS.y - PAD, w: bw, h: bh };
+      apply(prev);
+      window.addEventListener("resize", function () { update(prev); });
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (es) {
+          if (es[0].isIntersecting) { prevSvg.classList.add("is-drawn"); io.disconnect(); }
+        }, { threshold: 0.3 });
+        io.observe(prevSvg);
+      } else { prevSvg.classList.add("is-drawn"); }
+
+      /* ---------- Helskärmskarta med zoom ---------- */
+      var overlay = document.getElementById("mapOverlay");
+      var bigSvg = document.getElementById("mapBig");
+      if (!overlay || !bigSvg) return;
+      var big = makeMap(bigSvg, { labels: true, dot: 5, heart: 1 });
+      var MAXZ = 25, lastFocus = null, hintTimer = null;
+      var closeBtn = document.getElementById("mapClose"),
+          zin = document.getElementById("mapZoomIn"),
+          zout = document.getElementById("mapZoomOut"),
+          reset = document.getElementById("mapReset"),
+          hint = document.getElementById("mapHint");
+
+      function fitView() {
+        var rect = bigSvg.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        var scale = Math.min(rect.width / (BOUNDS.w + PAD * 2), rect.height / (BOUNDS.h + PAD * 2));
+        var w = rect.width / scale, h = rect.height / scale;
+        big.fit = { w: w, h: h };
+        big.vb = { x: BOUNDS.x + BOUNDS.w / 2 - w / 2, y: BOUNDS.y + BOUNDS.h / 2 - h / 2, w: w, h: h };
+        apply(big);
+      }
+      function clampView() {
+        var v = big.vb;
+        var cx = Math.min(Math.max(v.x + v.w / 2, BOUNDS.x), BOUNDS.x + BOUNDS.w);
+        var cy = Math.min(Math.max(v.y + v.h / 2, BOUNDS.y), BOUNDS.y + BOUNDS.h);
+        v.x = cx - v.w / 2; v.y = cy - v.h / 2;
+      }
+      function zoomAt(clientX, clientY, factor) {
+        var rect = bigSvg.getBoundingClientRect(), v = big.vb;
+        var fx = (clientX - rect.left) / rect.width, fy = (clientY - rect.top) / rect.height;
+        var ux = v.x + fx * v.w, uy = v.y + fy * v.h;
+        var nw = Math.min(big.fit.w, Math.max(big.fit.w / MAXZ, v.w / factor));
+        var nh = nw * big.fit.h / big.fit.w;
+        v.x = ux - fx * nw; v.y = uy - fy * nh; v.w = nw; v.h = nh;
+        clampView(); apply(big);
+      }
+      function zoomCenter(factor) {
+        var rect = bigSvg.getBoundingClientRect();
+        zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
+      }
+      function panBy(dx, dy) {
+        var rect = bigSvg.getBoundingClientRect(), k = big.vb.w / rect.width;
+        big.vb.x -= dx * k; big.vb.y -= dy * k;
+        clampView(); apply(big);
+      }
+
+      function openMap() {
+        lastFocus = document.activeElement;
+        overlay.hidden = false;
+        document.documentElement.style.overflow = "hidden";
+        fitView();
+        bigSvg.classList.remove("is-drawn");
+        void bigSvg.getBoundingClientRect();
+        bigSvg.classList.add("is-drawn");
+        hint.classList.remove("is-gone");
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(function () { hint.classList.add("is-gone"); }, 5000);
+        closeBtn.focus();
+      }
+      function closeMap() {
+        overlay.hidden = true;
+        document.documentElement.style.overflow = "";
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+      document.getElementById("mapOpen").addEventListener("click", openMap);
+      prevBtn.addEventListener("click", openMap);
+      closeBtn.addEventListener("click", closeMap);
+      zin.addEventListener("click", function () { zoomCenter(1.7); });
+      zout.addEventListener("click", function () { zoomCenter(1 / 1.7); });
+      reset.addEventListener("click", fitView);
+      window.addEventListener("resize", function () { if (!overlay.hidden) fitView(); });
+
+      // Scrollhjul / pekplatta
+      bigSvg.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        var d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+        zoomAt(e.clientX, e.clientY, Math.exp(-d * (e.ctrlKey ? 0.01 : 0.0018)));
+      }, { passive: false });
+      bigSvg.addEventListener("dblclick", function (e) { zoomAt(e.clientX, e.clientY, 2); });
+
+      // Dra med mus eller finger, nyp med två fingrar
+      var ptrs = {}, pinch = null;
+      function ids() { return Object.keys(ptrs); }
+      bigSvg.addEventListener("pointerdown", function (e) {
+        bigSvg.setPointerCapture(e.pointerId);
+        ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+        pinch = null;
+        hint.classList.add("is-gone");
+      });
+      bigSvg.addEventListener("pointermove", function (e) {
+        var p = ptrs[e.pointerId];
+        if (!p) return;
+        var n = ids();
+        if (n.length === 1) {
+          panBy(e.clientX - p.x, e.clientY - p.y);
+          p.x = e.clientX; p.y = e.clientY;
+        } else if (n.length === 2) {
+          p.x = e.clientX; p.y = e.clientY;
+          var a = ptrs[n[0]], b = ptrs[n[1]];
+          var d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+          if (pinch && pinch.d > 0) {
+            zoomAt(mx, my, d / pinch.d);
+            panBy(mx - pinch.mx, my - pinch.my);
+          }
+          pinch = { d: d, mx: mx, my: my };
+        }
+      });
+      function endPtr(e) { delete ptrs[e.pointerId]; pinch = null; }
+      bigSvg.addEventListener("pointerup", endPtr);
+      bigSvg.addEventListener("pointercancel", endPtr);
+
+      // Tangentbord
+      overlay.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { closeMap(); return; }
+        if (e.key === "+" || e.key === "=") zoomCenter(1.4);
+        else if (e.key === "-" || e.key === "_") zoomCenter(1 / 1.4);
+        else if (e.key === "ArrowLeft") panBy(60, 0);
+        else if (e.key === "ArrowRight") panBy(-60, 0);
+        else if (e.key === "ArrowUp") panBy(0, 60);
+        else if (e.key === "ArrowDown") panBy(0, -60);
+        else if (e.key === "Tab") {
+          var f = [closeBtn, zin, zout, reset], i = f.indexOf(document.activeElement);
+          e.preventDefault();
+          f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+        }
+      });
+    })();
+  </script>
+
 </body>
 </html>

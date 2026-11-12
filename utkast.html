@@ -564,7 +564,8 @@
   <script>
     /* Karta: var gästerna kommer ifrån.
        Lägg till en ort: en ny rad i TOWNS nedan, { n: "Namn", lat: 00.000, lon: 00.000 }.
-       Lägg till side: "l" om namnet ska stå till vänster om pricken. */
+       Lägg till side: "l" om namnet ska stå till vänster om pricken, och pin: true
+       om namnet alltid ska visas. Större orter först i listan får sina namn först. */
     (function () {
       "use strict";
       var NS = "http://www.w3.org/2000/svg";
@@ -577,17 +578,35 @@
 
       var HOTEL = { n: "Undersvik", lat: 61.6079, lon: 16.3209 };
       var TOWNS = [
-        { n: "Stockholm",   lat: 59.3293, lon: 18.0686 },
-        { n: "Göteborg",    lat: 57.7089, lon: 11.9746, side: "l" },
-        { n: "Malmö",       lat: 55.6050, lon: 13.0038, side: "l" },
-        { n: "Kalix",       lat: 65.8570, lon: 23.1430, side: "l" },
-        { n: "Vilhelmina",  lat: 64.6258, lon: 16.6553 },
-        { n: "Gävle",       lat: 60.6749, lon: 17.1413 },
-        { n: "Uppsala",     lat: 59.8586, lon: 17.6389, side: "l" },
-        { n: "Vikbolandet", lat: 58.6300, lon: 16.5800 },
-        { n: "Gideå",       lat: 63.5000, lon: 18.9700 },
-        { n: "Västanå",     lat: 63.3400, lon: 19.1300 },
-        { n: "Kilafors",    lat: 61.2330, lon: 16.5670 }
+        { n: "Stockholm",      lat: 59.3373, lon: 18.0621 },
+        { n: "Göteborg",       lat: 57.7089, lon: 11.9746, side: "l", pin: true },
+        { n: "Malmö",          lat: 55.5857, lon: 12.9851, side: "l" },
+        { n: "Umeå",           lat: 63.8327, lon: 20.2430 },
+        { n: "Kalix",          lat: 65.8585, lon: 23.1622, side: "l" },
+        { n: "Sundsvall",      lat: 62.3908, lon: 17.3069 },
+        { n: "Örnsköldsvik",   lat: 63.2909, lon: 18.7153, pin: true },
+        { n: "Gävle",          lat: 60.6750, lon: 17.1388 },
+        { n: "Uppsala",        lat: 59.8531, lon: 17.6457, side: "l", pin: true },
+        { n: "Linköping",      lat: 58.4138, lon: 15.6005, side: "l" },
+        { n: "Norrköping",     lat: 58.5997, lon: 16.1818, side: "l" },
+        { n: "Borås",          lat: 57.7219, lon: 12.9244, side: "l" },
+        { n: "Leksand",        lat: 60.7250, lon: 14.9989, side: "l" },
+        { n: "Vilhelmina",     lat: 64.6229, lon: 16.6560 },
+        { n: "Borgafjäll",     lat: 64.8387, lon: 15.0796, side: "l" },
+        { n: "Söderhamn",      lat: 61.3016, lon: 17.0461 },
+        { n: "Sandviken",      lat: 60.6186, lon: 16.7529, side: "l" },
+        { n: "Bollnäs",        lat: 61.3506, lon: 16.3879, side: "l" },
+        { n: "Kungälv",        lat: 57.9108, lon: 11.8953, side: "l" },
+        { n: "Näsviken",       lat: 61.7633, lon: 16.8726 },
+        { n: "Utantorp",       lat: 58.5910, lon: 16.5912 },
+        { n: "Bennebols Bruk", lat: 59.9567, lon: 18.3644 },
+        { n: "Karbenningby",   lat: 60.0110, lon: 16.1055, side: "l" },
+        { n: "Mo",             lat: 61.3129, lon: 16.7807 },
+        { n: "Västansjö",      lat: 61.2068, lon: 16.4735, side: "l" },
+        { n: "Gideå",          lat: 63.4770, lon: 18.9771 },
+        { n: "Västanå",        lat: 63.3916, lon: 19.0510 },
+        { n: "Björna",         lat: 63.5499, lon: 18.6009, side: "l" },
+        { n: "Långviksmon",    lat: 63.6134, lon: 18.6399 }
       ];
 
       function el(tag, attrs, parent) {
@@ -614,7 +633,7 @@
           var cy = (p[1] + h[1]) / 2 + (-dx / len) * len * 0.22;
           var a = el("path", { "class": "arc", pathLength: "1",
             d: "M" + p[0].toFixed(1) + " " + p[1].toFixed(1) + "Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + h[0].toFixed(1) + " " + h[1].toFixed(1) }, svg);
-          a.style.setProperty("--d", (i * 0.09).toFixed(2) + "s");
+          a.style.setProperty("--d", (i * Math.min(0.09, 1.2 / TOWNS.length)).toFixed(2) + "s");
           return a;
         });
 
@@ -654,40 +673,59 @@
         function sx(x) { return (x - v.x) * scale; }
         function sy(y) { return (y - v.y) * scale; }
         var blocks = [];
-        function hit(b) {
-          for (var i = 0; i < blocks.length; i++) {
-            var o = blocks[i];
-            if (b.x0 < o.x1 + 3 && b.x1 > o.x0 - 3 && b.y0 < o.y1 + 3 && b.y1 > o.y0 - 3) return true;
+        function overlaps(b, o) {
+          return b.x0 < o.x1 + 2 && b.x1 > o.x0 - 2 && b.y0 < o.y1 + 2 && b.y1 > o.y0 - 2;
+        }
+        function hit(b) { for (var i = 0; i < blocks.length; i++) if (overlaps(b, blocks[i])) return true; return false; }
+        function box(cx, cy, r) { return { x0: cx - r, y0: cy - r, x1: cx + r, y1: cy + r }; }
+        var dotBoxes = TOWNS.map(function (t) { return box(sx(t.x), sy(t.y), R + 2); });
+        function hitDots(b, skip) {
+          for (var i = 0; i < dotBoxes.length; i++) if (i !== skip && overlaps(b, dotBoxes[i])) return true;
+          return false;
+        }
+        // Ingen annan orts prickmitt får hamna under namnet, då ser det ut som att namnet hör till fel prick
+        function coversDotCenter(b, skip) {
+          for (var i = 0; i < TOWNS.length; i++) {
+            if (i === skip) continue;
+            var cx = sx(TOWNS[i].x), cy = sy(TOWNS[i].y);
+            if (cx > b.x0 - 3 && cx < b.x1 + 3 && cy > b.y0 - 3 && cy < b.y1 + 3) return true;
           }
           return false;
         }
-        function box(cx, cy, r) { return { x0: cx - r, y0: cy - r, x1: cx + r, y1: cy + r }; }
-        // Pricka och hjärta blockerar alltid etiketter
-        blocks.push(box(sx(m.h[0]), sy(m.h[1]), 16));
-        TOWNS.forEach(function (t) { blocks.push(box(sx(t.x), sy(t.y), R + 2)); });
+        blocks.push(box(sx(m.h[0]), sy(m.h[1]), 16));   // hjärtat blockerar alltid
 
-        function place(txt, name, x, y, side, charW, gap) {
+        function show(txt, b, x, y, sd, gap) {
+          blocks.push(b);
+          txt.classList.remove("is-off");
+          txt.setAttribute("x", (x + (sd === "l" ? -gap : gap) * k).toFixed(1));
+          txt.setAttribute("y", (y + 4.2 * k).toFixed(1));
+          txt.setAttribute("text-anchor", sd === "l" ? "end" : "start");
+        }
+        function place(txt, name, x, y, side, charW, gap, idx, pin) {
           var w = name.length * charW, px = sx(x), py = sy(y);
-          var tries = [side, side === "l" ? "r" : "l"];   // prova först önskad sida, sedan motsatt
-          for (var i = 0; i < tries.length; i++) {
-            var sd = tries[i];
+          function mk(sd) {
             var x0 = sd === "l" ? px - gap - w : px + gap;
-            var b = { x0: x0, x1: x0 + w, y0: py - 8, y1: py + 8 };
-            var inside = b.x0 > 4 && b.x1 < rect.width - 4 && b.y0 > 4 && b.y1 < rect.height - 4;
-            if (inside && !hit(b)) {
-              blocks.push(b);
-              txt.classList.remove("is-off");
-              txt.setAttribute("x", (x + (sd === "l" ? -gap : gap) * k).toFixed(1));
-              txt.setAttribute("y", (y + 4.2 * k).toFixed(1));
-              txt.setAttribute("text-anchor", sd === "l" ? "end" : "start");
-              return;
-            }
+            return { x0: x0, x1: x0 + w, y0: py - 8, y1: py + 8 };
+          }
+          function inside(b) { return b.x0 > 4 && b.x1 < rect.width - 4 && b.y0 > 4 && b.y1 < rect.height - 4; }
+          var other = side === "l" ? "r" : "l", b;
+          // 1) önskad sida, sedan motsatt sida, utan att täcka några andra prickar
+          var tries = [side, other];
+          for (var i = 0; i < tries.length; i++) {
+            b = mk(tries[i]);
+            if (inside(b) && !hit(b) && !hitDots(b, idx)) { show(txt, b, x, y, tries[i], gap); return; }
+          }
+          // 2) större orter får täcka närliggande prickar (men aldrig mitten av en annan prick)
+          // (orter med pin: true visas alltid om det finns plats för namnet, även över andra prickar)
+          for (var j = 0; j < (pin ? 2 : 1); j++) {
+            b = mk(tries[j]);
+            if (inside(b) && !hit(b) && (pin || !coversDotCenter(b, idx))) { show(txt, b, x, y, tries[j], gap); return; }
           }
           txt.classList.add("is-off");
         }
-        // Hotellet har företräde, sedan orterna i listans ordning
-        place(m.hlbl, HOTEL.n, m.h[0], m.h[1], "r", 8.8, 22);
-        TOWNS.forEach(function (t, i) { place(m.lbls[i], t.n, t.x, t.y, t.side || "r", 7.6, R + 6); });
+        // Hotellet har företräde, sedan orterna i listans ordning (större orter först)
+        place(m.hlbl, HOTEL.n, m.h[0], m.h[1], "r", 8.8, 22, -1);
+        TOWNS.forEach(function (t, i) { place(m.lbls[i], t.n, t.x, t.y, t.side || "r", 7.6, R + 6, i, t.pin); });
       }
 
       function apply(m) {
